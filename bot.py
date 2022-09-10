@@ -1,3 +1,5 @@
+import os
+from dotenv import load_dotenv
 from torch import autocast
 from diffusers import StableDiffusionPipeline
 from io import BytesIO
@@ -7,9 +9,10 @@ import discord
 import logging
 
 logging.basicConfig()
-
 logger = logging.getLogger(__name__)
-token = sys.argv[1]
+
+load_dotenv()
+token = os.getenv('DISCORD_TOKEN')
 
 bot = discord.Bot()
 

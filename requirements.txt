@@ -1,5 +1,8 @@
+python-dotenv
 py-cord
-torch
 ftfy
 transformers
 diffusers
+-i https://download.pytorch.org/whl/nightly/cpu torch
+-i https://download.pytorch.org/whl/nightly/cpu torchvision
+-i https://download.pytorch.org/whl/nightly/cpu torchaudio 
