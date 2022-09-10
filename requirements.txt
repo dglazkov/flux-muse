@@ -1,8 +1,3 @@
 python-dotenv
 py-cord
-ftfy
-transformers
-diffusers
--i https://download.pytorch.org/whl/nightly/cpu torch
--i https://download.pytorch.org/whl/nightly/cpu torchvision
--i https://download.pytorch.org/whl/nightly/cpu torchaudio 
+replicate
