@@ -1,0 +1,5 @@
+py-cord
+torch
+ftfy
+transformers
+diffusers
