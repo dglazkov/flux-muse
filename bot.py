@@ -12,7 +12,7 @@ logging.basicConfig()
 logger = logging.getLogger(__name__)
 
 load_dotenv()
-token = os.getenv('DISCORD_TOKEN')
+token = os.getenv("DISCORD_API_TOKEN")
 
 embed_color = discord.Colour.from_rgb(200, 200, 100)
 bot = discord.Bot()
@@ -45,7 +45,7 @@ async def make_image(ctx, prompt):
         await ctx.followup.send(embed=embed)
     except Exception as e:
         embed = discord.Embed(
-            title='show failed', description=f'{e}\n{traceback.print_exc()}', color=embed_color)
+            title="show failed", description=f"{e}\n{traceback.print_exc()}", color=embed_color)
         await ctx.followup.send(embed=embed)
 
 
