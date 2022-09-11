@@ -5,7 +5,7 @@ import traceback
 
 import discord
 import replicate
-from discord.ext import commands, tasks
+from discord.ext import tasks
 from dotenv import load_dotenv
 
 logging.basicConfig()
