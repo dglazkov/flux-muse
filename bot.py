@@ -88,5 +88,40 @@ async def story(ctx, prompt: str):
     print(f"asked to tell a story: {prompt}")
     queue.put_nowait(make_story(ctx, prompt))
 
+
+async def make_chain(ctx, prompt):
+    await asyncio.sleep(1.0)
+    print(f"make_chain with prompt: {prompt}")
+    embed = discord.Embed()
+    embed.color = embed_color
+    embed.title = prompt
+    try:
+        response = openai.Completion.create(
+            model="text-davinci-002",
+            prompt=f"describe a picture of a {prompt}",
+            temperature=0.7,
+            max_tokens=256,
+            top_p=1,
+            frequency_penalty=0,
+            presence_penalty=0
+        )
+        embed.description = response.choices[0].text
+        model = replicate.models.get("stability-ai/stable-diffusion")
+        image_url = model.predict(prompt=prompt)[0]
+        embed.set_image(url=image_url)
+        await ctx.followup.send(embed=embed)
+    except Exception as e:
+        embed = discord.Embed(
+            title="show failed", description=f"{e}\n{traceback.print_exc()}", color=embed_color)
+        await ctx.followup.send(embed=embed)
+
+
+@bot.slash_command(description="Tell me a story")
+async def chain(ctx, prompt: str):
+    await ctx.defer()
+    print(f"asked to chain: {prompt}")
+    queue.put_nowait(make_chain(ctx, prompt))
+
+
 runner.start()
 bot.run(discord_api_token)
