@@ -132,7 +132,8 @@ async def make_wdl(ctx, prompt):
     embed.color = embed_color
     embed.title = prompt
     try:
-        embed.description = ask_embeddings.ask(prompt, "embeddings/what-dimitri-learned.pkl")
+        embed.description = ask_embeddings.ask(
+            prompt, "embeddings/what-dimitri-learned.pkl")
         await ctx.followup.send(embed=embed)
     except Exception as e:
         embed = discord.Embed(
@@ -145,6 +146,29 @@ async def wdl(ctx, prompt: str):
     await ctx.defer()
     print(f"asked to wdl: {prompt}")
     queue.put_nowait(make_wdl(ctx, prompt))
+
+
+async def make_flux(ctx, prompt):
+    await asyncio.sleep(1.0)
+    print(f"make_flux with prompt: {prompt}")
+    embed = discord.Embed()
+    embed.color = embed_color
+    embed.title = prompt
+    try:
+        embed.description = ask_embeddings.ask(
+            prompt, "embeddings/flux.pkl")
+        await ctx.followup.send(embed=embed)
+    except Exception as e:
+        embed = discord.Embed(
+            title="flux failed", description=f"{e}\n{traceback.print_exc()}", color=embed_color)
+        await ctx.followup.send(embed=embed)
+
+
+@bot.slash_command(description="Ask FLUX Review issue archives")
+async def flux(ctx, prompt: str):
+    await ctx.defer()
+    print(f"asked to flux: {prompt}")
+    queue.put_nowait(make_flux(ctx, prompt))
 
 
 runner.start()
