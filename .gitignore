@@ -4,3 +4,5 @@ pyproject.toml
 .replit
 replit.nix
 venv/
+embeddings
+__pycache__

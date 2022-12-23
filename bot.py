@@ -3,6 +3,8 @@ import logging
 import os
 import traceback
 
+import ask_embeddings
+
 import discord
 import openai
 import replicate
@@ -121,6 +123,28 @@ async def chain(ctx, prompt: str):
     await ctx.defer()
     print(f"asked to chain: {prompt}")
     queue.put_nowait(make_chain(ctx, prompt))
+
+
+async def make_wdl(ctx, prompt):
+    await asyncio.sleep(1.0)
+    print(f"make_wdl with prompt: {prompt}")
+    embed = discord.Embed()
+    embed.color = embed_color
+    embed.title = prompt
+    try:
+        embed.description = ask_embeddings.ask(prompt, "embeddings/what-dimitri-learned.pkl")
+        await ctx.followup.send(embed=embed)
+    except Exception as e:
+        embed = discord.Embed(
+            title="wdl failed", description=f"{e}\n{traceback.print_exc()}", color=embed_color)
+        await ctx.followup.send(embed=embed)
+
+
+@bot.slash_command(description="Ask What Dimitri Learned")
+async def wdl(ctx, prompt: str):
+    await ctx.defer()
+    print(f"asked to wdl: {prompt}")
+    queue.put_nowait(make_wdl(ctx, prompt))
 
 
 runner.start()

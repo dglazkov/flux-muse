@@ -2,3 +2,5 @@ python-dotenv
 py-cord
 replicate
 openai
+numpy
+transformers
