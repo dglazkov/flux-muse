@@ -6,3 +6,4 @@ replit.nix
 venv/
 embeddings
 __pycache__
+env/
