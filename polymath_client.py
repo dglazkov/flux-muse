@@ -10,6 +10,7 @@ from ask_embeddings import (base64_from_vector, get_completion_with_context,
 
 CONTEXT_TOKEN_COUNT = 2000
 
+
 def query_server(query_embedding, server):
     http = urllib3.PoolManager()
     response = http.request(
@@ -25,11 +26,13 @@ def query_server(query_embedding, server):
         raise Exception(f"Server returned an error: {error}")
     return Library(data=obj)
 
+
 def ask_polymath(query, server):
     query_vector = base64_from_vector(get_embedding(query))
     library = query_server(query_vector, server)
     context = get_context_for_library(library)
-    sources = [(chunk["url"], chunk["title"]) for chunk in get_chunk_infos_for_library(library)]
+    sources = [(info["url"], info["title"])
+               for info in get_chunk_infos_for_library(library)]
     answer = get_completion_with_context(query, "\n".join(context))
     print("Got completion")
-    return answer, list(set(sources))
+    return answer, sources
