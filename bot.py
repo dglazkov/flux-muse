@@ -125,6 +125,11 @@ async def chain(ctx, prompt: str):
     queue.put_nowait(make_chain(ctx, prompt))
 
 
+def format_polymath_embed(answer, sources):
+    links = "\n".join([f" - [{title}]( {url} )" for url, title in sources[:4]])
+    return f"{answer}\n\nSources:\n{links}"
+
+
 async def make_wdl(ctx, prompt):
     await asyncio.sleep(1.0)
     print(f"make_wdl with prompt: {prompt}")
@@ -132,8 +137,8 @@ async def make_wdl(ctx, prompt):
     embed.color = embed_color
     embed.title = prompt
     try:
-        answer, sources = ask_polymath(prompt, "https://polymath.glazkov.com")
-        embed.description = answer
+        embed.description = format_polymath_embed(
+            *ask_polymath(prompt, "https://polymath.glazkov.com"))
         await ctx.followup.send(embed=embed)
     except Exception as e:
         embed = discord.Embed(
@@ -155,8 +160,8 @@ async def make_flux(ctx, prompt):
     embed.color = embed_color
     embed.title = prompt
     try:
-        answer, sources = ask_polymath(prompt, "https://polymath.fluxcollective.org")
-        embed.description = answer
+        embed.description = format_polymath_embed(
+            *ask_polymath(prompt, "https://polymath.fluxcollective.org"))
         await ctx.followup.send(embed=embed)
     except Exception as e:
         embed = discord.Embed(
@@ -164,11 +169,34 @@ async def make_flux(ctx, prompt):
         await ctx.followup.send(embed=embed)
 
 
-@bot.slash_command(description="Ask FLUX Review issue archives")
+@ bot.slash_command(description="Ask FLUX Review issue archives")
 async def flux(ctx, prompt: str):
     await ctx.defer()
     print(f"asked to flux: {prompt}")
     queue.put_nowait(make_flux(ctx, prompt))
+
+
+async def make_alex(ctx, prompt):
+    await asyncio.sleep(1.0)
+    print(f"make_alex with prompt: {prompt}")
+    embed = discord.Embed()
+    embed.color = embed_color
+    embed.title = prompt
+    try:
+        embed.description = format_polymath_embed(
+            *ask_polymath(prompt, "https://polymath.komoroske.com"))
+        await ctx.followup.send(embed=embed)
+    except Exception as e:
+        embed = discord.Embed(
+            title="alex failed", description=f"{e}\n{traceback.print_exc()}", color=embed_color)
+        await ctx.followup.send(embed=embed)
+
+
+@ bot.slash_command(description="Ask Alex's collective writings")
+async def alex(ctx, prompt: str):
+    await ctx.defer()
+    print(f"asked to alex: {prompt}")
+    queue.put_nowait(make_alex(ctx, prompt))
 
 
 runner.start()

@@ -19,6 +19,7 @@ def query_server(query_embedding, server):
             "query_embedding_model": EMBEDDINGS_MODEL_ID,
             "count": CONTEXT_TOKEN_COUNT}).data
     obj = json.loads(response)
+    print(f"Got response from the server")
     if 'error' in obj:
         error = obj['error']
         raise Exception(f"Server returned an error: {error}")
@@ -28,6 +29,7 @@ def ask_polymath(query, server):
     query_vector = base64_from_vector(get_embedding(query))
     library = query_server(query_vector, server)
     context = get_context_for_library(library)
-    sources = [chunk["url"] for chunk in get_chunk_infos_for_library(library)]
+    sources = [(chunk["url"], chunk["title"]) for chunk in get_chunk_infos_for_library(library)]
     answer = get_completion_with_context(query, "\n".join(context))
+    print("Got completion")
     return answer, sources
