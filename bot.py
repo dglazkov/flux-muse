@@ -3,7 +3,7 @@ import logging
 import os
 import traceback
 
-import ask_embeddings
+from polymath_client import ask_polymath
 
 import discord
 import openai
@@ -132,8 +132,8 @@ async def make_wdl(ctx, prompt):
     embed.color = embed_color
     embed.title = prompt
     try:
-        embed.description = ask_embeddings.ask(
-            prompt, "embeddings/what-dimitri-learned.pkl")
+        answer, sources = ask_polymath(prompt, "https://polymath.glazkov.com")
+        embed.description = answer
         await ctx.followup.send(embed=embed)
     except Exception as e:
         embed = discord.Embed(
@@ -155,8 +155,8 @@ async def make_flux(ctx, prompt):
     embed.color = embed_color
     embed.title = prompt
     try:
-        embed.description = ask_embeddings.ask(
-            prompt, "embeddings/flux.pkl")
+        answer, sources = ask_polymath(prompt, "https://polymath.fluxcollective.org")
+        embed.description = answer
         await ctx.followup.send(embed=embed)
     except Exception as e:
         embed = discord.Embed(
