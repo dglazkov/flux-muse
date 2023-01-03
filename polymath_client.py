@@ -32,4 +32,4 @@ def ask_polymath(query, server):
     sources = [(chunk["url"], chunk["title"]) for chunk in get_chunk_infos_for_library(library)]
     answer = get_completion_with_context(query, "\n".join(context))
     print("Got completion")
-    return answer, sources
+    return answer, list(set(sources))

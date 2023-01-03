@@ -126,8 +126,9 @@ async def chain(ctx, prompt: str):
 
 
 def format_polymath_embed(answer, sources):
+    sources_label = "Here are some inks to explore" if answer == "I don't know." else "Sources"
     links = "\n".join([f" - [{title}]( {url} )" for url, title in sources[:4]])
-    return f"{answer}\n\nSources:\n{links}"
+    return f"{answer}\n\n{sources_label}:\n{links}"
 
 
 async def make_wdl(ctx, prompt):
