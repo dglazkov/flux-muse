@@ -3,12 +3,21 @@
 import json
 import urllib3
 
-from ask_embeddings import (base64_from_vector, get_completion_with_context,
+from ask_embeddings import (base64_from_vector, get_completion_for_multiple_subjects,
+                            get_completion_for_subjects_and_topics,
+                            get_completion_with_context,
                             get_embedding, Library, get_context_for_library,
                             get_chunk_infos_for_library, CURRENT_VERSION,
                             EMBEDDINGS_MODEL_ID)
 
-CONTEXT_TOKEN_COUNT = 2000
+# Smaller number to allow for all three endpoints.
+CONTEXT_TOKEN_COUNT = 500
+
+KNOWN_POLYMATH_ENDPOINTS = {
+    "Alex": "https://polymath.komoroske.com",
+    "Dimitri": "https://polymath.glazkov.com",
+    "FLUX": "https://polymath.fluxcollective.org"
+}
 
 
 def query_server(query_embedding, server):
@@ -36,3 +45,31 @@ def ask_polymath(query, server):
     answer = get_completion_with_context(query, "\n".join(context))
     print("Got completion")
     return answer, sources
+
+
+def polymath_action(prompt):
+    known_subjects = list(KNOWN_POLYMATH_ENDPOINTS.keys())
+
+    # First, determine subjects and topics
+    subjects_and_topics = json.loads(
+        get_completion_for_subjects_and_topics(known_subjects, prompt))
+    print(f"Got subjects and topics: {subjects_and_topics}")
+    context_query = ", ".join(subjects_and_topics.get("topics"))
+    query_vector = base64_from_vector(get_embedding(context_query))
+
+    context = ""
+
+    # Then, query Polymath endpoints on the subject and get contexts
+    # and compose context out of subjects's contexts
+    for subject in subjects_and_topics.get("subjects"):
+        server = KNOWN_POLYMATH_ENDPOINTS[subject]
+        library = query_server(query_vector, server)
+        context += f"\n{subject} says:\n {' '.join(get_context_for_library(library))}\n"
+
+    print("Got context")
+
+    # Then, do the usual completion with the composed context
+    answer = get_completion_for_multiple_subjects(prompt, context)
+
+    print("Got completion")
+    return answer

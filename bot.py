@@ -3,7 +3,7 @@ import logging
 import os
 import traceback
 
-from polymath_client import ask_polymath
+from polymath_client import ask_polymath, polymath_action
 
 import discord
 import openai
@@ -170,7 +170,7 @@ async def make_flux(ctx, prompt):
         await ctx.followup.send(embed=embed)
 
 
-@ bot.slash_command(description="Ask FLUX Review issue archives")
+@bot.slash_command(description="Ask FLUX Review issue archives")
 async def flux(ctx, prompt: str):
     await ctx.defer()
     print(f"asked to flux: {prompt}")
@@ -193,11 +193,33 @@ async def make_alex(ctx, prompt):
         await ctx.followup.send(embed=embed)
 
 
-@ bot.slash_command(description="Ask Alex's collective writings")
+@bot.slash_command(description="Ask Alex's collective writings")
 async def alex(ctx, prompt: str):
     await ctx.defer()
     print(f"asked to alex: {prompt}")
     queue.put_nowait(make_alex(ctx, prompt))
+
+
+async def act(ctx, prompt, action):
+    await asyncio.sleep(1.0)
+    print(f"act with prompt: {prompt}")
+    embed = discord.Embed()
+    embed.color = embed_color
+    embed.title = prompt
+    try:
+        embed.description = action(prompt)
+        await ctx.followup.send(embed=embed)
+    except Exception as e:
+        embed = discord.Embed(
+            title="act failed", description=f"{e}\n{traceback.print_exc()}", color=embed_color)
+        await ctx.followup.send(embed=embed)
+
+
+@bot.slash_command(description="Ask Polymath")
+async def ask(ctx, prompt: str):
+    await ctx.defer()
+    print(f"asked polymath: {prompt}")
+    queue.put_nowait(act(ctx, prompt, polymath_action))
 
 
 runner.start()

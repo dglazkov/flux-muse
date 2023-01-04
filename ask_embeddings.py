@@ -170,7 +170,8 @@ class Library:
     @embedding_model.setter
     def embedding_model(self, value):
         if value != EMBEDDINGS_MODEL_ID:
-            raise TypeError(f'The only supported value for embedding model is {EMBEDDINGS_MODEL_ID}')
+            raise TypeError(
+                f'The only supported value for embedding model is {EMBEDDINGS_MODEL_ID}')
         self._data['embedding_model'] = value
 
     @property
@@ -185,9 +186,10 @@ class Library:
         _, _, canonical_value = keys_to_omit(value)
         self._data['omit'] = canonical_value
 
-    def extend(self, other : 'Library'):
+    def extend(self, other: 'Library'):
         if other.embedding_model != self.embedding_model:
-            raise Exception('The other library had a different embedding model')
+            raise Exception(
+                'The other library had a different embedding model')
         # TODO: handle key collisions; keys are only guaranteed to be unique
         # within a single library.
         self._data['content'].update(other._data['content'])
@@ -222,7 +224,7 @@ class Library:
     def set_chunk(self, chunk_id, chunk):
         self._data["content"][chunk_id] = chunk
 
-    def set_chunk_field(self, chunk_id, text=None, embedding=None, token_count=None, info = None):
+    def set_chunk_field(self, chunk_id, text=None, embedding=None, token_count=None, info=None):
         if chunk_id not in self._data["content"]:
             self._data["content"][chunk_id] = {}
         chunk = self._data["content"][chunk_id]
@@ -234,7 +236,7 @@ class Library:
             chunk["token_count"] = token_count
         if info != None:
             chunk["info"] = info
-    
+
     def delete_chunk_field(self, chunk_id, fields=None):
         if isinstance(fields, str):
             fields = [fields]
@@ -258,14 +260,14 @@ class Library:
             chunk['embedding'] = base64_from_vector(
                 chunk['embedding']).decode('ascii')
         return result
-    
+
     def save(self, filename):
         result = self.serializable()
         with open(filename, 'w') as f:
             json.dump(result, f, indent='\t')
 
 
-def get_similarities(query_embedding, library : Library):
+def get_similarities(query_embedding, library: Library):
     items = sorted([
         (vector_similarity(query_embedding, item['embedding']), issue_id)
         for issue_id, item
@@ -280,16 +282,17 @@ def load_library(library_file) -> Library:
 def load_multiple_libraries(library_file_names) -> Library:
     result = Library()
     for file in library_file_names:
-        library = Library(filename =file)
+        library = Library(filename=file)
         result.extend(library)
     return result
+
 
 def get_token_count(text):
     tokenizer = GPT2TokenizerFast.from_pretrained("gpt2")
     return len(tokenizer.tokenize(text))
 
 
-def get_context(chunk_ids, library : Library, count=MAX_CONTEXT_LEN_IN_TOKENS, count_type_is_chunk=False):
+def get_context(chunk_ids, library: Library, count=MAX_CONTEXT_LEN_IN_TOKENS, count_type_is_chunk=False):
     """
     Returns a dict of chunk_id to possibly_truncated_chunk_text.
 
@@ -316,18 +319,19 @@ def get_context(chunk_ids, library : Library, count=MAX_CONTEXT_LEN_IN_TOKENS, c
     return result
 
 
-def get_context_for_library(library : Library):
+def get_context_for_library(library: Library):
     """
     Returns an array of all text for every chunk in library
     """
     return [chunk['text'] for (_, chunk) in library.chunks]
 
 
-def get_chunk_infos_for_library(library : Library):
+def get_chunk_infos_for_library(library: Library):
     """
     Returns all infos for all chunks in library
     """
-    infos = [(chunk["similarity"], chunk['info']) for (_, chunk) in library.chunks]
+    infos = [(chunk["similarity"], chunk['info'])
+             for (_, chunk) in library.chunks]
     infos.sort(reverse=True)
     unique_infos = []
     urls = []
@@ -381,7 +385,7 @@ def keys_to_omit(configuration=''):
     return (omit_whole_chunk, set(result), configuration)
 
 
-def library_for_query(library : Library, version=None, query_embedding=None, query_embedding_model=None, count=None, count_type='token', sort='similarity', sort_reversed=False, seed=None, omit='embedding'):
+def library_for_query(library: Library, version=None, query_embedding=None, query_embedding_model=None, count=None, count_type='token', sort='similarity', sort_reversed=False, seed=None, omit='embedding'):
 
     # We do our own defaulting so that servers that call us can pass the result
     # of request.get() directly and if it's None, we'll use the default.
@@ -472,6 +476,21 @@ def get_completion_with_context(query, context):
     prompt = f"Answer the question as truthfully as possible using the provided context, and if the answer is not contained within the text below, say \"I don't know.\"\n\nContext:\n{context} \n\nQuestion:\n{query}\n\nAnswer:"
     return get_completion(prompt)
 
+
+def get_completion_for_subjects_and_topics(subjects, query):
+    # Crafted here: https://beta.openai.com/playground/p/FO65XAmlwZ0wRclRPp8r9o5D?model=text-davinci-003
+    prompt = f"""Known subjects are: {','.join(subjects)}. Subject names are not case-sensitive.
+In the question below, match known subjects and identify topics. When unknown subject is encountered, they are a topic. Output as valid JSON, containing two lists: \"subjects\" and \"topics\".
+Question:{query}
+Answer:"""
+    return get_completion(prompt)
+
+def get_completion_for_multiple_subjects(context, query):
+    prompt = f"""Read these essays by different authors and answer the question below to the best of your abilities
+{context}
+
+Question: {query}"""
+    return get_completion(prompt)
 
 def ask(query, context_query=None, library_file=None):
     if not context_query:
