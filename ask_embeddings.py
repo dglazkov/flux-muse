@@ -489,7 +489,8 @@ def get_completion_for_multiple_subjects(context, query):
     prompt = f"""Read these essays by different authors and answer the question below to the best of your abilities
 {context}
 
-Question: {query}"""
+Question: {query}
+Answer:"""
     return get_completion(prompt)
 
 def ask(query, context_query=None, library_file=None):
