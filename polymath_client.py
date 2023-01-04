@@ -71,7 +71,9 @@ def polymath_action(prompt):
     # Then, query Polymath endpoints on the subject and get contexts
     # and compose context out of subjects's contexts
     for subject in subjects_and_topics.get("subjects"):
-        server = KNOWN_POLYMATH_ENDPOINTS[subject.lower()]
+        server = KNOWN_POLYMATH_ENDPOINTS.get(subject.lower(), '')
+        if not server:
+            continue
         library = query_server(query_vector, server["url"])
         context += f"\n{server['nickname']} says:\n {' '.join(get_context_for_library(library))}\n"
 
