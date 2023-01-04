@@ -14,9 +14,18 @@ from ask_embeddings import (base64_from_vector, get_completion_for_multiple_subj
 CONTEXT_TOKEN_COUNT = 500
 
 KNOWN_POLYMATH_ENDPOINTS = {
-    "Alex": "https://polymath.komoroske.com",
-    "Dimitri": "https://polymath.glazkov.com",
-    "FLUX": "https://polymath.fluxcollective.org"
+    "alex": {
+        "nickname": "Alex",
+        "url": "https://polymath.komoroske.com"
+    },
+    "dimitri": {
+        "nickname": "Dimitri",
+        "url": "https://polymath.glazkov.com"
+    },
+    "flux": {
+        "nickname": "FLUX",
+        "url": "https://polymath.fluxcollective.org"
+    }
 }
 
 
@@ -48,8 +57,8 @@ def ask_polymath(query, server):
 
 
 def polymath_action(prompt):
-    known_subjects = list(KNOWN_POLYMATH_ENDPOINTS.keys())
-
+    known_subjects = [ endpoint["nickname"] for endpoint in KNOWN_POLYMATH_ENDPOINTS.values() ]
+    print(known_subjects)
     # First, determine subjects and topics
     subjects_and_topics = json.loads(
         get_completion_for_subjects_and_topics(known_subjects, prompt))
@@ -62,9 +71,9 @@ def polymath_action(prompt):
     # Then, query Polymath endpoints on the subject and get contexts
     # and compose context out of subjects's contexts
     for subject in subjects_and_topics.get("subjects"):
-        server = KNOWN_POLYMATH_ENDPOINTS[subject]
-        library = query_server(query_vector, server)
-        context += f"\n{subject} says:\n {' '.join(get_context_for_library(library))}\n"
+        server = KNOWN_POLYMATH_ENDPOINTS[subject.lower()]
+        library = query_server(query_vector, server["url"])
+        context += f"\n{server['nickname']} says:\n {' '.join(get_context_for_library(library))}\n"
 
     print("Got context")
 
