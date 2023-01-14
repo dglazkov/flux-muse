@@ -22,6 +22,10 @@ KNOWN_POLYMATH_ENDPOINTS = {
         "nickname": "Dimitri",
         "url": "https://polymath.glazkov.com"
     },
+    "dion": {
+        "nickname": "Dion",
+        "url": "https://polymath.almaer.com"
+    },
     "flux": {
         "nickname": "FLUX",
         "url": "https://polymath.fluxcollective.org"
@@ -56,8 +60,19 @@ def ask_polymath(query, server):
     return answer, sources
 
 
+def format_polymath_embed(answer, sources):
+    sources_label = "Here are some inks to explore" if answer == "I don't know." else "Sources"
+    links = "\n".join([f" - [{title}]( {url} )" for url, title in sources[:4]])
+    return f"{answer}\n\n{sources_label}:\n{links}"
+
+
+def dion_action(prompt):
+    return format_polymath_embed(*ask_polymath(prompt, KNOWN_POLYMATH_ENDPOINTS["dion"]["url"]))
+
+
 def polymath_action(prompt):
-    known_subjects = [ endpoint["nickname"] for endpoint in KNOWN_POLYMATH_ENDPOINTS.values() ]
+    known_subjects = [endpoint["nickname"]
+                      for endpoint in KNOWN_POLYMATH_ENDPOINTS.values()]
     print(known_subjects)
     # First, determine subjects and topics
     subjects_and_topics = json.loads(

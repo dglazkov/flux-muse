@@ -3,13 +3,14 @@ import logging
 import os
 import traceback
 
-from polymath_client import ask_polymath, polymath_action
-
 import discord
 import openai
 import replicate
 from discord.ext import tasks
 from dotenv import load_dotenv
+
+from polymath_client import (ask_polymath, format_polymath_embed,
+                             polymath_action, dion_action)
 
 logging.basicConfig()
 logger = logging.getLogger(__name__)
@@ -125,12 +126,6 @@ async def chain(ctx, prompt: str):
     queue.put_nowait(make_chain(ctx, prompt))
 
 
-def format_polymath_embed(answer, sources):
-    sources_label = "Here are some inks to explore" if answer == "I don't know." else "Sources"
-    links = "\n".join([f" - [{title}]( {url} )" for url, title in sources[:4]])
-    return f"{answer}\n\n{sources_label}:\n{links}"
-
-
 async def make_wdl(ctx, prompt):
     await asyncio.sleep(1.0)
     print(f"make_wdl with prompt: {prompt}")
@@ -221,6 +216,12 @@ async def ask(ctx, prompt: str):
     print(f"asked polymath: {prompt}")
     queue.put_nowait(act(ctx, prompt, polymath_action))
 
+
+@bot.slash_command(description="Ask Dion's collective writings")
+async def dion(ctx, prompt: str):
+    await ctx.defer()
+    print(f"asked of dion: {prompt}")
+    queue.put_nowait(act(ctx, prompt, dion_action))
 
 runner.start()
 bot.run(discord_api_token)
